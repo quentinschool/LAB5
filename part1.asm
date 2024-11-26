@@ -26,7 +26,9 @@ section .bss			; BSS, uninitialized identifiers
     array: resw ARRAY_SIZE
 section .data			; Data section, initialized identifiers
 
+    temp: dw 0	
 section .rodata         ; Read-only section, immutable identifiers
+        fmt_curr_line: db "DEBUG LINE: %d", NL, NULL
 
     array_output: db TAB, "Array Index: %d  Value: %d", NL
 
@@ -42,24 +44,37 @@ main:					; the program label for the entry point
 	; 
 	; Your NASM code will go in here
 	;
+    CURR_LINE(__LINE__)
 
     mov esi, array
+    CURR_LINE(__LINE__)
+    mov ebx, 0
+    mov ax, 0
 
     loop:
-        mov [esi+(ecx*4)], (2+(eci*2))
-        inc ecx
-        cmp ecx, ARRAY_SIZE
+        add ax, 2
+        CURR_LINE(__LINE__)
+        mov [esi + ebx * 2 ], ax
+        inc ebx
+        cmp ebx, ARRAY_SIZE
         jl loop
     
-    mov ecx, 0
-    printloop:
-        push [esi+(ecx*4)] 
-        push ecx
-        call array_output
-        call printf
-        inc ecx
-        jl printloop
+        mov ebx, 0
+        mov edi, 0
 
+    CURR_LINE(__LINE__)
+
+    printloop:
+        mov edi, [esi+(ebx*2)]
+        push edi
+        push ebx
+        push array_output
+        call printf
+        add esp, 6
+        inc ebx
+        cmp ebx, ARRAY_SIZE
+        jl printloop
+CURR_LINE(__LINE__)
 
 
 	; Don't change or remove the lines of code in here  |
