@@ -8,7 +8,7 @@ global main				; the standard gcc entry point
     %define NL 10
     %define TAB 9
     %define EXIT_SUCCESS 0
-    %define ARRAY_SIZE 20
+    %define ARRAY_SIZE 15
 
 	;%define DEBUG
     %ifdef DEBUG
@@ -23,7 +23,7 @@ global main				; the standard gcc entry point
         %endmacro
     %endif ;DEBUG
 section .bss			; BSS, uninitialized identifiers
-    array: resw ARRAY_SIZE
+    array: resd ARRAY_SIZE
 section .data			; Data section, initialized identifiers
     lesstenoutput: db "Array Index: %d  Value: %d", NL
     temp: dw 0	
@@ -52,25 +52,25 @@ main:					; the program label for the entry point
     mov esi, array
     CURR_LINE(__LINE__)
     mov ebx, 0
-    mov edi, 0
+    mov edi, 1
 
     loop:
         add edi, 2
         CURR_LINE(__LINE__)
-        mov [esi+ebx*2], edi
+        mov [esi+ebx*4], edi
         inc ebx
         cmp ebx, ARRAY_SIZE
         jl loop
     
-        mov ebx, 0
-        mov edi, 0
+    mov ebx, 14
+    mov edi, 0
 
-        mov esi, array
+    mov esi, array
 
     CURR_LINE(__LINE__)
 
     printloop:
-        movzx eax, word [esi+ebx*2]
+        movzx eax, word [esi+ebx*4]
         push eax
         push ebx
         cmp ebx, 10
@@ -84,9 +84,9 @@ main:					; the program label for the entry point
         print:
             call printf
             add esp, 12
-            inc ebx
-            cmp ebx, ARRAY_SIZE
-            jl printloop
+            sub ebx, 1
+            cmp ebx, 0
+            jge printloop
 CURR_LINE(__LINE__)
 
     
