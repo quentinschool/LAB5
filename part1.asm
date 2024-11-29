@@ -69,7 +69,7 @@ main:					; the program label for the entry point
 
     printloop:
         push word [esi]
-        push ebx
+        push word [ebx]
         push array_output
         call printf
         add esp, 8
