@@ -54,7 +54,8 @@ main:					; the program label for the entry point
     loop:
         add ax, 2
         CURR_LINE(__LINE__)
-        mov [esi + ebx * 2 ], ax
+        mov [esi], ax
+        add esi, 2
         inc ebx
         cmp ebx, ARRAY_SIZE
         jl loop
@@ -62,16 +63,18 @@ main:					; the program label for the entry point
         mov ebx, 0
         mov edi, 0
 
+        mov esi, array
+
     CURR_LINE(__LINE__)
 
     printloop:
-        mov edi, [esi+(ebx*2)]
-        push edi
+        push word [esi]
         push ebx
         push array_output
         call printf
-        add esp, 6
+        add esp, 8
         inc ebx
+        add esi, 2
         cmp ebx, ARRAY_SIZE
         jl printloop
 CURR_LINE(__LINE__)
