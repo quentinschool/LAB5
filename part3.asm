@@ -27,14 +27,16 @@ section .bss			; BSS, uninitialized identifiers
 section .data			; Data section, initialized identifiers
     arraysize: dd 10
     array:  dd 0x0
-    getasize: db "Enter the number of elements in the array ", NL, NULL
-    getvalue: db "%d", NULL
-    array_number: db TAB, "%d", NULL
+    getasize: db "Enter the number of elements in the array ", NULL
+    array_number: db "%d      ", NULL
     array_end: db NL
+    seed: dd NULL
 section .rodata         ; Read-only section, immutable identifiers
         fmt_curr_line: db "DEBUG LINE: %d", NL, NULL
 
-        array_output: db "array1:"
+        array_output: db "array1:      ", NULL
+        getseed: db "Enter the seed to use for rand() ", NULL
+        getvalue: db "%d", NULL
         
 
 
@@ -82,6 +84,22 @@ main:					; the program label for the entry point
         mov ecx, [arraysize]    ; the number of elements in the array
         ;dec ecx         ; we have to decrement. without a decrement, we'd go from 10-0 (one to many)
 
+
+
+    ; push getseed
+    ; call printf
+    ; add esp, 4
+
+    ; push seed
+    ; push getvalue
+    ; call scanf
+    ; add esp, 8
+    ; cmp dword [seed], 0
+    ; jle seed3
+    ; jmp seedend
+    ; seed3:
+    ;     mov dword [seed], 3
+    ; seedend:
 
     mov esi, array
     CURR_LINE(__LINE__)
