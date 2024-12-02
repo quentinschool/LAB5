@@ -4,6 +4,10 @@
 extern printf			; the C function, to be called
 extern malloc
 extern scanf
+extern rand
+extern srand
+extern free
+
 global main				; the standard gcc entry point
 
     %define NULL 0
@@ -24,19 +28,29 @@ global main				; the standard gcc entry point
         %endmacro
     %endif ;DEBUG
 section .bss			; BSS, uninitialized identifiers
+    array resd 1
 section .data			; Data section, initialized identifiers
-    arraysize: dd 10
-    array:  dd 0x0
+    arraysize: dd NULL
+    ; array:  dd 04
     getasize: db "Enter the number of elements in the array ", NULL
-    array_number: db "%d      ", NULL
-    array_end: db NL
+    array_number: db "     %d", NULL
+    lessten: db "      %d", NULL
+    
     seed: dd NULL
+    modulo: dd NULL
+    x: dd NULL
+    y: dd NULL
+    
 section .rodata         ; Read-only section, immutable identifiers
         fmt_curr_line: db "DEBUG LINE: %d", NL, NULL
 
-        array_output: db "array1:      ", NULL
+        array_output: db "array1:", NULL
         getseed: db "Enter the seed to use for rand() ", NULL
-        getvalue: db "%d", NULL
+        getvalue: dd "%d", NULL
+        getmodulo: db "Enter the modulo to apply to the random numbers ", NULL
+        modu: db "modulo %d", NL, NULL
+        divi: db "dividend: %d", NL, NULL
+        array_end: db NL
         
 
 
@@ -72,54 +86,102 @@ main:					; the program label for the entry point
         mov dword [arraysize], 10
 
     malloc1:
-        mov eax, arraysize    ; the number of elements we want for the array
+        mov eax, dword[arraysize]    ; the number of elements we want for the array
         imul eax, 4          ; we have to multiply by the size of element
         push eax             ; push that value onto the stack
         call malloc          ; call malloc()
-        mov [ array ], eax       ; the return value from malloc() is in eax. save it in a memory location
+               ; the return value from malloc() is in eax. save it in a memory location
         ;; should check for NULL return vale from malloc()
         add esp, 4           ; clean up the stack
-
-    ; mov edi, [ array ]       ; move the pointer value in z into a register
+        mov [array], eax
+        mov esi,  array        ; move the pointer value in z into a register
         mov ecx, [arraysize]    ; the number of elements in the array
         ;dec ecx         ; we have to decrement. without a decrement, we'd go from 10-0 (one to many)
 
+    ; love_init:
+    ;     mov dword [ esi + ecx ], 0
+    ;     ;; mov dword [ z + ecx], 0      ; does not work. this is the address of z, not address in z
+    ;     ;; mov dword [ [ z ] + ecx ], 0 ; does not accept this syntax
+    ;     loop love_init
 
 
-    ; push getseed
-    ; call printf
-    ; add esp, 4
 
-    ; push seed
-    ; push getvalue
-    ; call scanf
-    ; add esp, 8
-    ; cmp dword [seed], 0
-    ; jle seed3
-    ; jmp seedend
-    ; seed3:
-    ;     mov dword [seed], 3
-    ; seedend:
+    random:
+        push getseed
+        call printf
+        add esp, 4
+
+        push seed
+        push getvalue
+        call scanf
+        add esp, 8
+        cmp dword [seed], 0
+        jle seed3
+        jmp seedend
+        seed3:
+            mov dword [seed], 3
+        seedend:
+            push dword [seed]
+            call srand
+            add esp, 4
+
+    getmod:
+        push getmodulo
+        call printf
+        add esp, 4
+        
+        push modulo
+        push getvalue
+        call scanf
+        add esp, 8
+
+        cmp dword [modulo], 0
+        jle modulo0
+        jmp moduloend
+
+        modulo0:
+            mov dword [modulo], 100
+        moduloend:
 
     mov esi, array
-    CURR_LINE(__LINE__)
     mov ebx, 0
     mov edi, 1
 
+    
+
+
+
     loop:
-        add edi, 2
-        CURR_LINE(__LINE__)
-        mov [esi+ebx*4], edi
-        inc ebx
-        cmp ebx, ecx
-        jl loop
+        mov eax, 0
+        xor eax, eax
+        call rand
+        ; mov [x], eax
+        mov esi, array
+        mov edx, 0
+        ; mov edi, [modulo]
+        ; mov eax, [x]
+        xor edx, edx
+        cmp eax, 0
+        je .zero
+        cmp dword [modulo], 0
+        je .zero
+        idiv dword [modulo]
+        jmp .finish
+        .zero:
+            mov dword[edx], 0
+        .finish:
+            mov esi, array
+            mov ecx, [arraysize]
+            mov [esi+(ebx*4)], edx
+            inc ebx
+            cmp ebx, ecx
+            jl loop
     
     mov ebx, 0
     mov edi, 0
-
+    mov eax, 0
     mov esi, array
 
-    CURR_LINE(__LINE__)
 
     push array_output
     call printf
@@ -128,20 +190,39 @@ main:					; the program label for the entry point
     CURR_LINE(__LINE__)
 
     printloop:              
-        movzx eax, word [esi+ebx*4]
+        mov eax, [esi+ebx*4]
+        
+        mov esi, array
+
+        cmp eax, 10
         push eax
+        jl .less10
         push array_number
+        jmp .print
+        .less10:
+            push lessten  
+        .print:
+            
+            call printf
+            add esp, 8
+            inc ebx
+            mov ecx, [arraysize]
+            cmp ebx, ecx
+            jl printloop
 
-
-        call printf
-        add esp, 8
-        inc ebx
-        mov ecx, [arraysize]
-        cmp ebx, ecx
-        jl printloop
     push array_end
     call printf
     add esp, 4
+    
+
+    ;; free the memory we allocated
+    mov ecx, array
+    call free
+    add esp, 4
+
+
+   
+  
 CURR_LINE(__LINE__)
 
     

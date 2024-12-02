@@ -12,7 +12,8 @@ ASFLAGS = -g -f elf32 -F dwarf
 PROG1 = part1
 PROG2 = part2
 PROG3 = part3
-PROGS = $(PROG1) $(PROG2) $(PROG3)
+PROG4 = part4
+PROGS = $(PROG1) $(PROG2) $(PROG3) $(PROG4)
 
 #There are some speciat make variables
 #$@ is the target filename
@@ -39,6 +40,12 @@ $(PROG3): $(PROG3).o
 
 $(PROG3).o: $(PROG3).asm
 	$(AS) $(ASFLAGS) -l $(PROG3).lst $<
+
+$(PROG4): $(PROG4).o
+	$(CC) $(LDFLAGS) -o $@ $^
+
+$(PROG4).o: $(PROG4).asm
+	$(AS) $(ASFLAGS) -l $(PROG4).lst $<
 
 clean:
 	rm -f $(PROGS) *.s *.o *.lst *~ \#*
