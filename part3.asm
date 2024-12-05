@@ -152,14 +152,10 @@ main:					; the program label for the entry point
 
 
     loop:
-        mov eax, 0
         xor eax, eax
         call rand
-        ; mov [x], eax
-        mov esi, array
+        mov esi, [array]
         mov edx, 0
-        ; mov edi, [modulo]
-        ; mov eax, [x]
         xor edx, edx
         cmp eax, 0
         je .zero
@@ -170,7 +166,7 @@ main:					; the program label for the entry point
         .zero:
             mov dword[edx], 0
         .finish:
-            mov esi, array
+            mov esi, [array]
             mov ecx, [arraysize]
             mov [esi+(ebx*4)], edx
             inc ebx
@@ -180,7 +176,7 @@ main:					; the program label for the entry point
     mov ebx, 0
     mov edi, 0
     mov eax, 0
-    mov esi, array
+    mov esi, [array]
 
 
     push array_output
@@ -192,7 +188,7 @@ main:					; the program label for the entry point
     printloop:              
         mov eax, [esi+ebx*4]
         
-        mov esi, array
+        mov esi, [array]
 
         cmp eax, 10
         push eax

@@ -37,6 +37,7 @@ section .data			; Data section, initialized identifiers
     getasize: db "Enter the number of elements in the array ", NULL
     array_number: db "     %d", NULL
     lessten: db "      %d", NULL
+    dig3: db "    %d", NULL
     seed: dd NULL
     modulo: dd NULL
     x: dd NULL
@@ -55,6 +56,7 @@ section .rodata         ; Read-only section, immutable identifiers
         divi: db "dividend: %d", NL, NULL
         array_end: db NL, NULL
         backarray_end: db "  in reverse",NL, NULL
+        array3_end: db "  array1 + array2", NL, NULL
         
 
 
@@ -90,7 +92,7 @@ main:					; the program label for the entry point
         mov dword [arraysize], 15
 
     malloc1:
-        mov eax, dword[arraysize]    ; the number of elements we want for the array
+        mov eax, [arraysize]    ; the number of elements we want for the array
         imul eax, 4          ; we have to multiply by the size of element
         push eax             ; push that value onto the stack
         call malloc          ; call malloc()
@@ -98,7 +100,7 @@ main:					; the program label for the entry point
         mov [array1], eax
         mov ecx, [arraysize]    ; the number of elements in the array
     malloc2:
-        mov eax, dword[arraysize]    ; the number of elements we want for the array
+        mov eax, [arraysize]    ; the number of elements we want for the array
         imul eax, 4          ; we have to multiply by the size of element
         push eax             ; push that value onto the stack
         call malloc          ; call malloc()
@@ -106,7 +108,7 @@ main:					; the program label for the entry point
         mov [array2], eax
         mov ecx, [arraysize]    ; the number of elements in the array
     malloc3:
-        mov eax, dword[arraysize]    ; the number of elements we want for the array
+        mov eax, [arraysize]    ; the number of elements we want for the array
         imul eax, 4          ; we have to multiply by the size of element
         push eax             ; push that value onto the stack
         call malloc          ; call malloc()
@@ -114,9 +116,9 @@ main:					; the program label for the entry point
         mov [array3], eax
         mov ecx, [arraysize]    ; the number of elements in the array
 
-    love_init:
-        mov dword [ array3 + ecx ], 0
-        loop love_init
+    ; love_init:
+    ;     mov dword [ array3 + ecx ], 0
+    ;     loop love_init
 
     
 
@@ -158,23 +160,16 @@ main:					; the program label for the entry point
             mov dword [modulo], 150
         moduloend:
 
-    mov esi, array1
     mov ebx, 0
-    mov edi, 1
 
     
 
 
 
     loop1:
-        mov eax, 0
         xor eax, eax
         call rand
-        ; mov [x], eax
-        mov esi, array1
-        mov edx, 0
-        ; mov edi, [modulo]
-        ; mov eax, [x]
+        mov esi, [array1]
         xor edx, edx
         cmp eax, 0
         je .zero
@@ -185,7 +180,7 @@ main:					; the program label for the entry point
         .zero:
             mov dword[edx], 0
         .finish:
-            mov esi, array1
+            mov esi, [array1]
             mov ecx, [arraysize]
             mov [esi+(ebx*4)], edx
             inc ebx
@@ -195,7 +190,6 @@ main:					; the program label for the entry point
     mov ebx, 0
     mov edi, 0
     mov eax, 0
-    mov esi, array1
 
 
     push array_output
@@ -207,13 +201,18 @@ main:					; the program label for the entry point
     printloop1:              
         mov eax, [esi+ebx*4]
         
-        mov esi, array1
+        mov esi, [array1]
 
         cmp eax, 10
         push eax
         jl .less10
+        cmp eax, 100
+        jge .three
         push array_number
         jmp .print
+        .three:
+            push dig3
+            jmp .print
         .less10:
             push lessten  
         .print:
@@ -235,7 +234,7 @@ main:					; the program label for the entry point
         xor eax, eax
         call rand
         ; mov [x], eax
-        mov esi, array2
+        mov esi, [array2]
         mov edx, 0
         ; mov edi, [modulo]
         ; mov eax, [x]
@@ -249,7 +248,7 @@ main:					; the program label for the entry point
         .zero:
             mov dword[edx], 0
         .finish:
-            mov esi, array2
+            mov esi, [array2]
             mov ecx, [arraysize]
             mov [esi+(ebx*4)], edx
             inc ebx
@@ -259,7 +258,7 @@ main:					; the program label for the entry point
     mov ebx, 0
     mov edi, 0
     mov eax, 0
-    mov esi, array2
+    mov esi, [array2]
 
 
     push array_output2
@@ -269,13 +268,18 @@ main:					; the program label for the entry point
     printloop2:              
         mov eax, [esi+ebx*4]
         
-        mov esi, array2
+        mov esi, [array2]
 
         cmp eax, 10
         push eax
         jl .less10
+        cmp eax, 100
+        jge .three
         push array_number
         jmp .print
+        .three:
+            push dig3
+            jmp .print
         .less10:
             push lessten  
         .print:
@@ -300,13 +304,18 @@ main:					; the program label for the entry point
     printloop2back:
             mov eax, [esi+ebx*4]
         
-        mov esi, array2
+        mov esi, [array2]
 
         cmp eax, 10
         push eax
         jl .less10
+        cmp eax, 100
+        jge .three
         push array_number
         jmp .print
+        .three:
+            push dig3
+            jmp .print
         .less10:
             push lessten  
         .print:
@@ -322,40 +331,40 @@ main:					; the program label for the entry point
     call printf
     add esp, 4
         
-    mov ebx, 0
+    mov ecx, 0
     loop3:
-        mov edx, 0
-        mov esi, array3
-        mov ecx, [arraysize]
-        mov edx, [array1+(ebx*4)]
-        add edx, [array2+(ebx*4)]
-        mov [esi+(ebx*4)], edx
-        inc ebx
-        mov ecx, [arraysize]
-        cmp ebx, ecx
+        mov esi, [array1]
+        mov eax, [esi+ecx*4]
+        mov edi, [array2]
+        add eax, [edi+ecx*4]
+        mov esi, [array3]
+        mov [esi+ecx*4], eax
+        inc ecx
+        cmp ecx, [arraysize]
         jl loop3
 
     mov ebx, 0
     mov edi, 0
     mov eax, 0
-    mov esi, array3
 
     push array_output3
     call printf
     add esp, 4
-        mov esi, array3
 
-
-    printloop3:              
-        mov eax, [esi+ebx*4]
-        
-        mov esi, array3
-
+    mov ecx, 0
+    printloop3:  
+        mov esi, [array3]           
+        mov eax, [esi+ebx*4]       
         cmp eax, 10
         push eax
         jl .less10
+        cmp eax, 100
+        jge .three
         push array_number
         jmp .print
+        .three:
+            push dig3
+            jmp .print
         .less10:
             push lessten  
         .print:
@@ -367,7 +376,7 @@ main:					; the program label for the entry point
             cmp ebx, ecx
             jl printloop3
 
-    push array_end
+    push array3_end
     call printf
     add esp, 4
 
